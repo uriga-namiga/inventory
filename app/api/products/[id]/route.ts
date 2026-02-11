@@ -52,7 +52,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, image_url, purchase_price, sale_price, margin_rate, link } = body;
+    const { name, image_url, purchase_price, sale_price, margin_rate, quantity, link } = body;
 
     // 유효성 검사
     if (!name || purchase_price === undefined || sale_price === undefined) {
@@ -66,10 +66,10 @@ export async function PUT(
     const result = await client.query(
       `UPDATE products
        SET name = $1, image_url = $2, purchase_price = $3, sale_price = $4,
-           margin_rate = $5, link = $6, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $7
+           margin_rate = $5, quantity = $6, link = $7, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $8
        RETURNING *`,
-      [name, image_url || null, purchase_price, sale_price, margin_rate, link || null, id]
+      [name, image_url || null, purchase_price, sale_price, margin_rate, quantity || 0, link || null, id]
     );
 
     if (result.rows.length === 0) {

@@ -15,6 +15,7 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel }: Prod
   const [purchasePrice, setPurchasePrice] = useState('');
   const [salePrice, setSalePrice] = useState('');
   const [marginRate, setMarginRate] = useState('0');
+  const [quantity, setQuantity] = useState('0');
   const [link, setLink] = useState('');
   const [imagePreview, setImagePreview] = useState('');
 
@@ -26,6 +27,7 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel }: Prod
       setPurchasePrice(editingProduct.purchase_price.toString());
       setSalePrice(editingProduct.sale_price.toString());
       setMarginRate(editingProduct.margin_rate.toString());
+      setQuantity(editingProduct.quantity.toString());
       setLink(editingProduct.link);
     }
   }, [editingProduct]);
@@ -130,6 +132,7 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel }: Prod
       purchase_price: parseFloat(purchasePrice) || 0,
       sale_price: parseFloat(salePrice) || 0,
       margin_rate: parseFloat(marginRate) || 0,
+      quantity: parseInt(quantity) || 0,
       link,
     };
 
@@ -150,6 +153,7 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel }: Prod
     setPurchasePrice('');
     setSalePrice('');
     setMarginRate('0');
+    setQuantity('0');
     setLink('');
   };
 
@@ -273,6 +277,23 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel }: Prod
             required
             min="0"
             step="0.01"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            placeholder="0"
+          />
+        </div>
+
+        {/* 구매 수량 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            구매 수량 *
+          </label>
+          <input
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            required
+            min="0"
+            step="1"
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             placeholder="0"
           />

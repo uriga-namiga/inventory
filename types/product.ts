@@ -5,6 +5,7 @@ export interface Product {
   purchase_price: number;
   sale_price: number;
   margin_rate: number;
+  quantity: number;
   link: string;
   created_at: string;
   updated_at: string;

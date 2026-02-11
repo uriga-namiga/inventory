@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   let client;
   try {
     const body = await request.json();
-    const { name, image_url, purchase_price, sale_price, margin_rate, link } = body;
+    const { name, image_url, purchase_price, sale_price, margin_rate, quantity, link } = body;
 
     // 유효성 검사
     if (!name || purchase_price === undefined || sale_price === undefined) {
@@ -48,10 +48,10 @@ export async function POST(request: Request) {
 
     client = await getDbClient();
     const result = await client.query(
-      `INSERT INTO products (name, image_url, purchase_price, sale_price, margin_rate, link)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO products (name, image_url, purchase_price, sale_price, margin_rate, quantity, link)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [name, image_url || null, purchase_price, sale_price, margin_rate, link || null]
+      [name, image_url || null, purchase_price, sale_price, margin_rate, quantity || 0, link || null]
     );
 
     return NextResponse.json(result.rows[0], { status: 201 });
