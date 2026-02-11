@@ -9,6 +9,8 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('table');
+  const [isFormExpanded, setIsFormExpanded] = useState(true);
 
   // 제품 목록 로드
   useEffect(() => {
@@ -131,20 +133,24 @@ export default function Home() {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className={`transition-all duration-300 ${isFormExpanded ? 'md:col-span-3' : 'md:col-span-1'}`}>
             <ProductForm
               onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
               editingProduct={editingProduct}
               onCancel={handleCancelEdit}
+              onExpandChange={setIsFormExpanded}
             />
           </div>
 
-          <div className="lg:col-span-2">
+          <div className={`transition-all duration-300 ${isFormExpanded ? 'md:col-span-9' : 'md:col-span-11'}`}>
             <ProductList
               products={products}
               onEdit={handleEdit}
               onDelete={handleDeleteProduct}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              isFormExpanded={isFormExpanded}
             />
           </div>
         </div>
