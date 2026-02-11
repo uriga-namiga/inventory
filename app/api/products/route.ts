@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   let client;
   try {
     const body = await request.json();
-    const { name, image_url, purchase_price, sale_price, margin_rate, quantity, link } = body;
+    const { name, image_url, purchase_price, sale_price, margin_rate, quantity, link, supplier, purchase_date } = body;
 
     // 유효성 검사
     if (!name || purchase_price === undefined || sale_price === undefined) {
@@ -47,11 +47,21 @@ export async function POST(request: Request) {
     }
 
     client = await getDbClient();
+    
+    // 구매처가 입력되었으면 suppliers 테이블에 저장
+    if (supplier && supplier.trim()) {
+      await client.query(
+        `INSERT INTO suppliers (name) VALUES ($1) 
+         ON CONFLICT (name) DO NOTHING`,
+        [supplier.trim()]
+      );
+    }
+    
     const result = await client.query(
-      `INSERT INTO products (name, image_url, purchase_price, sale_price, margin_rate, quantity, link)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO products (name, image_url, purchase_price, sale_price, margin_rate, quantity, link, supplier, purchase_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
-      [name, image_url || null, purchase_price, sale_price, margin_rate, quantity || 0, link || null]
+      [name, image_url || null, purchase_price, sale_price, margin_rate, quantity || 0, link || null, supplier || null, purchase_date || null]
     );
 
     return NextResponse.json(result.rows[0], { status: 201 });
