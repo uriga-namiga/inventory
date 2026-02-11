@@ -3,49 +3,93 @@
 import { useState, useEffect } from 'react';
 import ProductForm from '@/components/ProductForm';
 import ProductList from '@/components/ProductList';
+import type { Product } from '@/types/product';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // 로컬스토리지에서 데이터 로드
+  // 제품 목록 로드
   useEffect(() => {
-    const savedProducts = localStorage.getItem('products');
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts));
-    }
+    fetchProducts();
   }, []);
 
-  // 로컬스토리지에 데이터 저장 (에러 핸들링 추가)
-  useEffect(() => {
-    if (products.length > 0) {
-      try {
-        localStorage.setItem('products', JSON.stringify(products));
-      } catch (error) {
-        if (error instanceof Error && error.name === 'QuotaExceededError') {
-          alert('저장 공간이 부족합니다. 일부 제품을 삭제해주세요.');
-          console.error('LocalStorage 용량 초과:', error);
-        }
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('/api/products');
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data);
       }
+    } catch (error) {
+      console.error('제품 로드 실패:', error);
+      alert('제품 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
     }
-  }, [products]);
-
-  const handleAddProduct = (product: Omit<Product, 'id'>) => {
-    const newProduct = {
-      ...product,
-      id: Date.now().toString(),
-    };
-    setProducts([...products, newProduct]);
   };
 
-  const handleUpdateProduct = (product: Product) => {
-    setProducts(products.map(p => p.id === product.id ? product : p));
-    setEditingProduct(null);
+  const handleAddProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product),
+      });
+
+      if (response.ok) {
+        const newProduct = await response.json();
+        setProducts([newProduct, ...products]);
+        alert('제품이 등록되었습니다.');
+      } else {
+        throw new Error('제품 등록 실패');
+      }
+    } catch (error) {
+      console.error('제품 등록 실패:', error);
+      alert('제품 등록에 실패했습니다.');
+    }
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleUpdateProduct = async (product: Product) => {
+    try {
+      const response = await fetch(`/api/products/${product.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product),
+      });
+
+      if (response.ok) {
+        const updatedProduct = await response.json();
+        setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+        setEditingProduct(null);
+        alert('제품이 수정되었습니다.');
+      } else {
+        throw new Error('제품 수정 실패');
+      }
+    } catch (error) {
+      console.error('제품 수정 실패:', error);
+      alert('제품 수정에 실패했습니다.');
+    }
+  };
+
+  const handleDeleteProduct = async (id: number) => {
     if (confirm('정말 삭제하시겠습니까?')) {
-      setProducts(products.filter(p => p.id !== id));
+      try {
+        const response = await fetch(`/api/products/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          setProducts(products.filter(p => p.id !== id));
+          alert('제품이 삭제되었습니다.');
+        } else {
+          throw new Error('제품 삭제 실패');
+        }
+      } catch (error) {
+        console.error('제품 삭제 실패:', error);
+        alert('제품 삭제에 실패했습니다.');
+      }
     }
   };
 
@@ -57,6 +101,17 @@ export default function Home() {
   const handleCancelEdit = () => {
     setEditingProduct(null);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">⏳</div>
+          <p className="text-gray-600 dark:text-gray-300">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4">

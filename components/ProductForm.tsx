@@ -21,11 +21,11 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel }: Prod
   useEffect(() => {
     if (editingProduct) {
       setName(editingProduct.name);
-      setImage(editingProduct.image);
-      setImagePreview(editingProduct.image);
-      setPurchasePrice(editingProduct.purchasePrice.toString());
-      setSalePrice(editingProduct.salePrice.toString());
-      setMarginRate(editingProduct.marginRate.toString());
+      setImage(editingProduct.image_url);
+      setImagePreview(editingProduct.image_url);
+      setPurchasePrice(editingProduct.purchase_price.toString());
+      setSalePrice(editingProduct.sale_price.toString());
+      setMarginRate(editingProduct.margin_rate.toString());
       setLink(editingProduct.link);
     }
   }, [editingProduct]);
@@ -86,12 +86,35 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel }: Prod
     const file = e.target.files?.[0];
     if (file) {
       try {
+        // 1. 이미지 압축
         const compressed = await compressImage(file);
-        setImage(compressed);
-        setImagePreview(compressed);
+        
+        // 2. Base64를 Blob으로 변환
+        const response = await fetch(compressed);
+        const blob = await response.blob();
+        const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+        
+        // 3. Cloudinary에 업로드
+        const formData = new FormData();
+        formData.append('file', compressedFile);
+        
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('업로드 실패');
+        }
+        
+        const { url } = await uploadResponse.json();
+        
+        // 4. URL 저장
+        setImage(url);
+        setImagePreview(url);
       } catch (error) {
-        console.error('이미지 압축 실패:', error);
-        alert('이미지 처리에 실패했습니다.');
+        console.error('이미지 업로드 실패:', error);
+        alert('이미지 업로드에 실패했습니다.');
       }
     }
   };
@@ -101,16 +124,15 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel }: Prod
     
     const productData = {
       name,
-      image: image || imagePreview,
-      purchasePrice: parseFloat(purchasePrice) || 0,
-      salePrice: parseFloat(salePrice) || 0,
-      marginRate: parseFloat(marginRate) || 0,
+      image_url: image || imagePreview,
+      purchase_price: parseFloat(purchasePrice) || 0,
+      sale_price: parseFloat(salePrice) || 0,
+      margin_rate: parseFloat(marginRate) || 0,
       link,
-      createdAt: editingProduct?.createdAt || new Date().toISOString(),
     };
 
     if (editingProduct) {
-      onSubmit({ ...productData, id: editingProduct.id });
+      onSubmit({ ...productData, id: editingProduct.id, created_at: editingProduct.created_at, updated_at: new Date().toISOString() });
     } else {
       onSubmit(productData);
     }

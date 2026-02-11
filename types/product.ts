@@ -1,10 +1,11 @@
 export interface Product {
-  id: string;
+  id: number;
   name: string;
-  image: string;
-  purchasePrice: number;
-  salePrice: number;
-  marginRate: number;
+  image_url: string;
+  purchase_price: number;
+  sale_price: number;
+  margin_rate: number;
   link: string;
-  createdAt: string;
+  created_at: string;
+  updated_at: string;
 }

@@ -5,7 +5,7 @@ import type { Product } from '@/types/product';
 interface ProductListProps {
   products: Product[];
   onEdit: (product: Product) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
 }
 
 export default function ProductList({ products, onEdit, onDelete }: ProductListProps) {
@@ -54,9 +54,9 @@ export default function ProductList({ products, onEdit, onDelete }: ProductListP
           <div className="md:flex">
             {/* 이미지 */}
             <div className="md:w-48 h-48 bg-gray-100 dark:bg-gray-700 flex-shrink-0">
-              {product.image ? (
+              {product.image_url ? (
                 <img
-                  src={product.image}
+                  src={product.image_url}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
@@ -75,7 +75,7 @@ export default function ProductList({ products, onEdit, onDelete }: ProductListP
                     {product.name}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    등록일: {formatDate(product.createdAt)}
+                    등록일: {formatDate(product.created_at)}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -98,25 +98,25 @@ export default function ProductList({ products, onEdit, onDelete }: ProductListP
                 <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3">
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">구입가</p>
                   <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                    {formatPrice(product.purchasePrice)}
+                    {formatPrice(Number(product.purchase_price))}
                   </p>
                 </div>
                 <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-3">
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">판매가</p>
                   <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                    {formatPrice(product.salePrice)}
+                    {formatPrice(Number(product.sale_price))}
                   </p>
                 </div>
                 <div className="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-3">
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">마진율</p>
                   <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                    {product.marginRate.toFixed(2)}%
+                    {Number(product.margin_rate).toFixed(2)}%
                   </p>
                 </div>
                 <div className="bg-orange-50 dark:bg-orange-900/30 rounded-lg p-3">
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">마진액</p>
                   <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                    {formatPrice(product.salePrice - product.purchasePrice)}
+                    {formatPrice(Number(product.sale_price) - Number(product.purchase_price))}
                   </p>
                 </div>
               </div>
