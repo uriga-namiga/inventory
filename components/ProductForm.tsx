@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import type { Product } from '@/types/product';
 
 interface ProductFormProps {
-  onSubmit: (product: Product | Omit<Product, 'id'>) => void;
+  onSubmit: (product: Product | Omit<Product, 'id' | 'created_at' | 'updated_at'>) => void;
   editingProduct?: Product | null;
   onCancel?: () => void;
 }

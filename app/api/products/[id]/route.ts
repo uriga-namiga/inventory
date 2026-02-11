@@ -13,14 +13,15 @@ async function getDbClient() {
 // GET - 제품 상세 조회
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   let client;
   try {
+    const { id } = await params;
     client = await getDbClient();
     const result = await client.query(
       'SELECT * FROM products WHERE id = $1',
-      [params.id]
+      [id]
     );
 
     if (result.rows.length === 0) {
@@ -45,10 +46,11 @@ export async function GET(
 // PUT - 제품 수정
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   let client;
   try {
+    const { id } = await params;
     const body = await request.json();
     const { name, image_url, purchase_price, sale_price, margin_rate, link } = body;
 
@@ -67,7 +69,7 @@ export async function PUT(
            margin_rate = $5, link = $6, updated_at = CURRENT_TIMESTAMP
        WHERE id = $7
        RETURNING *`,
-      [name, image_url || null, purchase_price, sale_price, margin_rate, link || null, params.id]
+      [name, image_url || null, purchase_price, sale_price, margin_rate, link || null, id]
     );
 
     if (result.rows.length === 0) {
@@ -92,14 +94,15 @@ export async function PUT(
 // DELETE - 제품 삭제
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   let client;
   try {
+    const { id } = await params;
     client = await getDbClient();
     const result = await client.query(
       'DELETE FROM products WHERE id = $1 RETURNING id',
-      [params.id]
+      [id]
     );
 
     if (result.rows.length === 0) {

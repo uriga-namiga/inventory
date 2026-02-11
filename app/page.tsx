@@ -51,7 +51,13 @@ export default function Home() {
     }
   };
 
-  const handleUpdateProduct = async (product: Product) => {
+  const handleUpdateProduct = async (product: Product | Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
+    // Type guard to check if product has id
+    if (!('id' in product)) {
+      console.error('Product ID is required for update');
+      return;
+    }
+    
     try {
       const response = await fetch(`/api/products/${product.id}`, {
         method: 'PUT',
