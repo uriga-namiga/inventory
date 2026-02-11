@@ -35,8 +35,10 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel }: Prod
     const purchase = parseFloat(purchasePrice) || 0;
     const sale = parseFloat(salePrice) || 0;
     if (purchase > 0 && sale > 0) {
-      const margin = ((sale - purchase) / purchase * 100).toFixed(2);
-      setMarginRate(margin);
+      const margin = ((sale - purchase) / purchase * 100);
+      // 최대 999.99로 제한
+      const limitedMargin = Math.min(margin, 999.99);
+      setMarginRate(limitedMargin.toFixed(2));
     }
   }, [purchasePrice, salePrice]);
 
