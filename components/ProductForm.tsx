@@ -197,7 +197,7 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel, onExpa
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden sticky top-8 transition-all duration-300 ${!isExpanded ? 'md:w-16' : 'md:w-full'}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden sticky top-8 transition-all duration-300 ${!isExpanded ? 'sm:w-16' : 'sm:w-full'}`}>
       {/* 헤더 - 클릭하여 펼치기/접기 */}
       <button
         type="button"
@@ -216,9 +216,9 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel, onExpa
         )}
         <span className={isExpanded ? 'text-2xl' : 'text-xl'}>
           {/* 모바일: ▼/▲ */}
-          <span className="md:hidden">{isExpanded ? '▼' : '▲'}</span>
+          <span className="sm:hidden">{isExpanded ? '▼' : '▲'}</span>
           {/* 데스크톱: ◀/▶ */}
-          <span className="hidden md:inline">{isExpanded ? '◀' : '▶'}</span>
+          <span className="hidden sm:inline">{isExpanded ? '◀' : '▶'}</span>
         </span>
       </button>
       
