@@ -219,9 +219,9 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
   // 리스트 카드 컴포넌트
   const ProductCardList = ({ product }: { product: Product }) => (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-200">
-      <div className="lg:flex">
+      <div className="md:flex">
         {/* 이미지 */}
-        <div className="lg:w-48 h-48 bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+        <div className="md:w-48 h-48 bg-gray-100 dark:bg-gray-700 flex-shrink-0">
           {product.image_url ? (
             <img
               src={product.image_url}
@@ -274,7 +274,7 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
             </div>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
             <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3">
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">구입가</p>
               <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
@@ -346,7 +346,7 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         {/* 모바일: 카드 형태 */}
-        <div className="lg:hidden">
+        <div className="md:hidden">
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {sortedProducts.map((product) => {
               const marginAmount = Number(product.sale_price) - Number(product.purchase_price);
@@ -451,7 +451,7 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
         </div>
 
         {/* 데스크톱: 테이블 형태 */}
-        <div className="hidden lg:block overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-100 dark:bg-gray-700 border-b-2 border-gray-200 dark:border-gray-600">
@@ -684,7 +684,7 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
         </div>
 
         {/* Search and Filter Section */}
-        <div className={`flex gap-2 ${isFormExpanded ? 'flex-col lg:flex-row' : 'flex-col xl:flex-row'}`}>
+        <div className={`flex gap-2 ${isFormExpanded ? 'flex-col md:flex-row' : 'flex-col lg:flex-row'}`}>
           {/* Product Name Search */}
           <div className="flex-1 relative">
             <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
@@ -704,7 +704,7 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
           </div>
 
           {/* Supplier Combobox */}
-          <div className={`relative ${isFormExpanded ? 'lg:w-52' : 'xl:w-44'}`} ref={supplierRef}>
+          <div className={`relative ${isFormExpanded ? 'md:w-52' : 'lg:w-44'}`} ref={supplierRef}>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                 <span className={isFormExpanded ? 'text-sm' : 'text-xs'}>📦</span>
@@ -781,7 +781,7 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
               <svg className={isFormExpanded ? 'w-3.5 h-3.5' : 'w-3 h-3'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              <span className={isFormExpanded ? 'hidden lg:inline' : 'hidden xl:inline'}>초기화</span>
+              <span className={isFormExpanded ? 'hidden md:inline' : 'hidden lg:inline'}>초기화</span>
             </button>
           )}
         </div>
@@ -807,7 +807,7 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
         </div>
       ) : viewMode === 'grid' ? (
         // 그리드 뷰
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {displayedProducts.map(product => (
             <ProductCardGrid key={product.id} product={product} />
           ))}

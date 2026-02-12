@@ -133,8 +133,8 @@ export default function Home() {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className={`transition-all duration-300 ${isFormExpanded ? 'lg:col-span-3' : 'lg:col-span-1'}`}>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className={`transition-all duration-300 ${isFormExpanded ? 'md:col-span-3' : 'md:col-span-1'}`}>
             <ProductForm
               onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
               editingProduct={editingProduct}
@@ -143,7 +143,7 @@ export default function Home() {
             />
           </div>
 
-          <div className={`transition-all duration-300 ${isFormExpanded ? 'lg:col-span-9' : 'lg:col-span-11'}`}>
+          <div className={`transition-all duration-300 ${isFormExpanded ? 'md:col-span-9' : 'md:col-span-11'}`}>
             <ProductList
               products={products}
               onEdit={handleEdit}
