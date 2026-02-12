@@ -33,6 +33,8 @@ export default function ProductList({
   const [selectedSupplier, setSelectedSupplier] = useState<string | null>(null);
   const [supplierSearchQuery, setSupplierSearchQuery] = useState('');
   const [isSupplierDropdownOpen, setIsSupplierDropdownOpen] = useState(false);
+  const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   
   const supplierRef = useRef<HTMLDivElement>(null);
 
@@ -114,6 +116,31 @@ export default function ProductList({
     setSearchQuery('');
     setSelectedSupplier(null);
     setSupplierSearchQuery('');
+  };
+
+  // 롱프레스 핸들러
+  const handleLongPressStart = (productId: number) => {
+    const timer = setTimeout(() => {
+      setExpandedProductId(productId);
+    }, 500); // 0.5초 롱프레스
+    setLongPressTimer(timer);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  const handleCloseExpanded = () => {
+    setExpandedProductId(null);
+  };
+
+  // 제품명 축약 함수
+  const truncateProductName = (name: string, maxLength: number = 7) => {
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength) + '...';
   };
 
   const hasActiveFilters = searchQuery || selectedSupplier;
@@ -336,6 +363,36 @@ export default function ProductList({
   const ProductTableView = () => {
     const sortedProducts = getSortedProducts();
     
+    // 롱프레스 상태 관리
+    const [expandedNameId, setExpandedNameId] = useState<number | null>(null);
+    const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+
+    const handleMouseDown = (productId: number) => {
+      longPressTimer.current = setTimeout(() => {
+        setExpandedNameId(productId);
+      }, 500); // 500ms 롱프레스
+    };
+
+    const handleMouseUp = () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    };
+
+    const handleMouseLeave = () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    };
+
+    // 제품명 자르기 함수
+    const truncateName = (name: string, id: number) => {
+      if (expandedNameId === id) return name;
+      return name.length > 5 ? name.substring(0, 5) + '...' : name;
+    };
+
     const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
       <th 
         className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition select-none"
@@ -514,10 +571,18 @@ export default function ProductList({
                     </td>
 
                     {/* 제품명 */}
-                    <td className="px-4 py-3">
-                      <div className="max-w-xs">
-                        <p className="font-medium text-gray-900 dark:text-white truncate" title={product.name}>
-                          {product.name}
+                    <td className="px-4 py-3" style={{ minWidth: '150px' }}>
+                      <div>
+                        <p 
+                          className="font-medium text-gray-900 dark:text-white cursor-pointer select-none"
+                          onMouseDown={() => handleLongPressStart(product.id)}
+                          onMouseUp={handleLongPressEnd}
+                          onMouseLeave={handleLongPressEnd}
+                          onTouchStart={() => handleLongPressStart(product.id)}
+                          onTouchEnd={handleLongPressEnd}
+                          title="길게 눌러서 전체 보기"
+                        >
+                          {truncateProductName(product.name)}
                         </p>
                         {product.purchase_date && (
                           <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -539,14 +604,14 @@ export default function ProductList({
                     </td>
 
                     {/* 구매처 */}
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-2">
                       <span className="text-sm text-gray-700 dark:text-gray-300">
                         {product.supplier || '-'}
                       </span>
                     </td>
 
                     {/* 재고 */}
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
                         isOutOfStock
                           ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
@@ -559,28 +624,28 @@ export default function ProductList({
                     </td>
 
                     {/* 구입가 */}
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-2 py-2 text-right">
                       <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
                         {formatPrice(Number(product.purchase_price))}
                       </span>
                     </td>
 
                     {/* 판매가 */}
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-2 py-2 text-right">
                       <span className="text-sm font-medium text-green-600 dark:text-green-400">
                         {formatPrice(Number(product.sale_price))}
                       </span>
                     </td>
 
                     {/* 마진율 */}
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-2 py-2 text-right">
                       <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">
                         {Number(product.margin_rate).toFixed(2)}%
                       </span>
                     </td>
 
                     {/* 마진액 */}
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-2 py-2 text-right">
                       <span className={`text-sm font-semibold ${
                         marginAmount > 0 
                           ? 'text-orange-600 dark:text-orange-400' 
@@ -591,7 +656,7 @@ export default function ProductList({
                     </td>
 
                     {/* 액션 */}
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-2">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => onEdit(product)}
@@ -842,6 +907,34 @@ export default function ProductList({
       ) : (
         // 테이블 뷰
         <ProductTableView />
+      )}
+
+      {/* 제품명 전체 보기 모달 */}
+      {expandedProductId && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={handleCloseExpanded}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md mx-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white">제품명</h3>
+              <button
+                onClick={handleCloseExpanded}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-gray-900 dark:text-white break-words">
+              {products.find(p => p.id === expandedProductId)?.name}
+            </p>
+          </div>
+        </div>
       )}
     </div>
   );
