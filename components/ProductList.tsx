@@ -10,12 +10,21 @@ interface ProductListProps {
   viewMode: 'grid' | 'list' | 'table';
   onViewModeChange: (mode: 'grid' | 'list' | 'table') => void;
   isFormExpanded?: boolean;
+  onToggleForm?: (expanded: boolean) => void;
 }
 
 type SortField = 'name' | 'quantity' | 'purchase_price' | 'sale_price' | 'margin_rate';
 type SortDirection = 'asc' | 'desc';
 
-export default function ProductList({ products, onEdit, onDelete, viewMode, onViewModeChange, isFormExpanded = true }: ProductListProps) {
+export default function ProductList({ 
+  products, 
+  onEdit, 
+  onDelete, 
+  viewMode, 
+  onViewModeChange, 
+  isFormExpanded = true,
+  onToggleForm
+}: ProductListProps) {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   
@@ -633,50 +642,66 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
 
   return (
     <div className="space-y-4">
-      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg transition-all duration-300 ${isFormExpanded ? 'p-6' : 'p-3'}`}>
-        <div className={`flex justify-between items-center ${isFormExpanded ? 'mb-4' : 'mb-2'}`}>
-          <h2 className={`font-bold text-gray-800 dark:text-white ${isFormExpanded ? 'text-2xl' : 'text-lg'}`}>
-            제품 목록 ({getFilteredProducts.length}{getFilteredProducts.length !== products.length && `/${products.length}`})
-          </h2>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3">
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex items-center gap-2">
+            {/* 패널 확대 버튼 (폼이 축소되었을 때만 표시) */}
+            {!isFormExpanded && onToggleForm && (
+              <button
+                type="button"
+                onClick={() => onToggleForm(true)}
+                className="flex items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition justify-center p-1 rounded"
+                title="패널 펼치기"
+              >
+                <span className="text-base">
+                  <span className="sm:hidden">▲</span>
+                  <span className="hidden sm:inline">▶</span>
+                </span>
+              </button>
+            )}
+            <h2 className="font-bold text-gray-800 dark:text-white text-lg">
+              제품 목록 ({getFilteredProducts.length}{getFilteredProducts.length !== products.length && `/${products.length}`})
+            </h2>
+          </div>
           
           {/* 뷰 전환 버튼 */}
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             <button
               onClick={() => onViewModeChange('grid')}
-              className={`rounded-lg transition ${isFormExpanded ? 'p-2' : 'p-1.5'} ${
+              className={`rounded-lg transition p-1.5 ${
                 viewMode === 'grid'
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
               title="그리드 뷰"
             >
-              <svg className={isFormExpanded ? 'w-5 h-5' : 'w-4 h-4'} fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
             </button>
             <button
               onClick={() => onViewModeChange('list')}
-              className={`rounded-lg transition ${isFormExpanded ? 'p-2' : 'p-1.5'} ${
+              className={`rounded-lg transition p-1.5 ${
                 viewMode === 'list'
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
               title="리스트 뷰"
             >
-              <svg className={isFormExpanded ? 'w-5 h-5' : 'w-4 h-4'} fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
               </svg>
             </button>
             <button
               onClick={() => onViewModeChange('table')}
-              className={`rounded-lg transition ${isFormExpanded ? 'p-2' : 'p-1.5'} ${
+              className={`rounded-lg transition p-1.5 ${
                 viewMode === 'table'
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
               title="테이블 뷰"
             >
-              <svg className={isFormExpanded ? 'w-5 h-5' : 'w-4 h-4'} fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clipRule="evenodd" />
               </svg>
             </button>
@@ -684,11 +709,11 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
         </div>
 
         {/* Search and Filter Section */}
-        <div className={`flex gap-2 ${isFormExpanded ? 'flex-col sm:flex-row' : 'flex-col md:flex-row'}`}>
+        <div className="flex gap-2 flex-col sm:flex-row mb-4">
           {/* Product Name Search */}
           <div className="flex-1 relative">
             <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-              <svg className={isFormExpanded ? 'h-4 w-4 text-gray-400' : 'h-3.5 w-3.5 text-gray-400'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -697,17 +722,17 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="제품명 검색..."
-              className={`w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
-                isFormExpanded ? 'pl-8 pr-3 py-1.5 text-sm' : 'pl-7 pr-2 py-1 text-xs'
-              }`}
+              className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg 
+                       focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                       dark:bg-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
             />
           </div>
 
           {/* Supplier Combobox */}
-          <div className={`relative ${isFormExpanded ? 'sm:w-52' : 'md:w-44'}`} ref={supplierRef}>
+          <div className="relative sm:w-48" ref={supplierRef}>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                <span className={isFormExpanded ? 'text-sm' : 'text-xs'}>📦</span>
+                <span className="text-sm">📦</span>
               </div>
               <input
                 type="text"
@@ -718,16 +743,16 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
                 }}
                 onFocus={() => setIsSupplierDropdownOpen(true)}
                 placeholder="구매처"
-                className={`w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
-                  isFormExpanded ? 'pl-8 pr-8 py-1.5 text-sm' : 'pl-7 pr-7 py-1 text-xs'
-                }`}
+                className="w-full pl-8 pr-8 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg 
+                         focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                         dark:bg-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               />
               <button
                 type="button"
                 onClick={() => setIsSupplierDropdownOpen(!isSupplierDropdownOpen)}
                 className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                <svg className={`transition-transform ${isSupplierDropdownOpen ? 'rotate-180' : ''} ${isFormExpanded ? 'h-4 w-4' : 'h-3.5 w-3.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`h-4 w-4 transition-transform ${isSupplierDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
@@ -735,12 +760,10 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
 
             {/* Dropdown */}
             {isSupplierDropdownOpen && (
-              <div className={`absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-auto ${isFormExpanded ? 'text-sm' : 'text-xs'}`}>
+              <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-auto text-sm">
                 <button
                   onClick={() => handleSupplierSelect(null)}
-                  className={`w-full text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition ${
-                    isFormExpanded ? 'px-3 py-1.5' : 'px-2.5 py-1'
-                  } ${
+                  className={`w-full text-left px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 transition ${
                     !selectedSupplier ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold' : 'text-gray-700 dark:text-gray-300'
                   }`}
                 >
@@ -751,9 +774,7 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
                     <button
                       key={supplier}
                       onClick={() => handleSupplierSelect(supplier)}
-                      className={`w-full text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition ${
-                        isFormExpanded ? 'px-3 py-1.5' : 'px-2.5 py-1'
-                      } ${
+                      className={`w-full text-left px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 transition ${
                         selectedSupplier === supplier ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold' : 'text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -761,7 +782,7 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
                     </button>
                   ))
                 ) : (
-                  <div className={`text-gray-500 dark:text-gray-400 ${isFormExpanded ? 'px-3 py-1.5 text-xs' : 'px-2.5 py-1 text-[10px]'}`}>
+                  <div className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">
                     일치하는 구매처가 없습니다
                   </div>
                 )}
@@ -773,15 +794,14 @@ export default function ProductList({ products, onEdit, onDelete, viewMode, onVi
           {hasActiveFilters && (
             <button
               onClick={handleResetFilters}
-              className={`bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition flex items-center whitespace-nowrap ${
-                isFormExpanded ? 'px-3 py-1.5 text-sm gap-1.5' : 'px-2 py-1 text-xs gap-1'
-              }`}
+              className="px-3 py-1.5 text-sm bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition 
+                       flex items-center gap-1.5 whitespace-nowrap"
               title="필터 초기화"
             >
-              <svg className={isFormExpanded ? 'w-3.5 h-3.5' : 'w-3 h-3'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              <span className={isFormExpanded ? 'hidden sm:inline' : 'hidden md:inline'}>초기화</span>
+              <span className="hidden sm:inline">초기화</span>
             </button>
           )}
         </div>

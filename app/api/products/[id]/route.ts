@@ -20,7 +20,13 @@ export async function GET(
     const { id } = await params;
     client = await getDbClient();
     const result = await client.query(
-      'SELECT * FROM products WHERE id = $1',
+      `SELECT 
+        id, name, image_url, purchase_price, sale_price, margin_rate, 
+        quantity, link, supplier, 
+        TO_CHAR(purchase_date, 'YYYY-MM-DD') as purchase_date,
+        created_at, updated_at
+       FROM products 
+       WHERE id = $1`,
       [id]
     );
 

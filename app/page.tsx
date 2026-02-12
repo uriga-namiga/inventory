@@ -103,6 +103,7 @@ export default function Home() {
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
+    setIsFormExpanded(true); // 패널 열기
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -134,16 +135,19 @@ export default function Home() {
         </header>
 
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
-          <div className={`transition-all duration-300 ${isFormExpanded ? 'sm:col-span-3' : 'sm:col-span-1'}`}>
-            <ProductForm
-              onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
-              editingProduct={editingProduct}
-              onCancel={handleCancelEdit}
-              onExpandChange={setIsFormExpanded}
-            />
-          </div>
+          {/* 폼이 펼쳐졌을 때만 표시 */}
+          {isFormExpanded && (
+            <div className="transition-all duration-300 sm:col-span-3">
+              <ProductForm
+                onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
+                editingProduct={editingProduct}
+                onCancel={handleCancelEdit}
+                onExpandChange={setIsFormExpanded}
+              />
+            </div>
+          )}
 
-          <div className={`transition-all duration-300 ${isFormExpanded ? 'sm:col-span-9' : 'sm:col-span-11'}`}>
+          <div className={`transition-all duration-300 ${isFormExpanded ? 'sm:col-span-9' : 'sm:col-span-12'}`}>
             <ProductList
               products={products}
               onEdit={handleEdit}
@@ -151,6 +155,7 @@ export default function Home() {
               viewMode={viewMode}
               onViewModeChange={setViewMode}
               isFormExpanded={isFormExpanded}
+              onToggleForm={setIsFormExpanded}
             />
           </div>
         </div>

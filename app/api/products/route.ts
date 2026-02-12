@@ -16,7 +16,13 @@ export async function GET() {
   try {
     client = await getDbClient();
     const result = await client.query(
-      'SELECT * FROM products ORDER BY created_at DESC'
+      `SELECT 
+        id, name, image_url, purchase_price, sale_price, margin_rate, 
+        quantity, link, supplier, 
+        TO_CHAR(purchase_date, 'YYYY-MM-DD') as purchase_date,
+        created_at, updated_at
+       FROM products 
+       ORDER BY created_at DESC`
     );
     
     return NextResponse.json(result.rows);

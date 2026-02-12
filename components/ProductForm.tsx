@@ -58,7 +58,15 @@ export default function ProductForm({ onSubmit, editingProduct, onCancel, onExpa
       setQuantity(editingProduct.quantity.toString());
       setLink(editingProduct.link);
       setSupplier(editingProduct.supplier || '');
-      setPurchaseDate(editingProduct.purchase_date || '');
+      
+      // 날짜 형식 변환: ISO 형식에서 YYYY-MM-DD로
+      if (editingProduct.purchase_date) {
+        const date = new Date(editingProduct.purchase_date);
+        const formattedDate = date.toISOString().split('T')[0];
+        setPurchaseDate(formattedDate);
+      } else {
+        setPurchaseDate('');
+      }
     }
   }, [editingProduct]);
 
