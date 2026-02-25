@@ -126,6 +126,14 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <header className="text-center mb-8">
+          <div className="flex justify-end mb-2">
+            <a
+              href="/calculator"
+              className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
+            >
+              볼꾸 계산기 →
+            </a>
+          </div>
           <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
             📦 재고관리 시스템
           </h1>
