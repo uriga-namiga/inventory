@@ -32,7 +32,7 @@ function AdminContent() {
     }
   };
 
-  const handleAddPart = async (partData: Omit<Part, 'id' | 'created_at' | 'updated_at'>) => {
+  const handleAddPart = async (partData: Part | Omit<Part, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const response = await fetch('/api/calculator/parts', {
         method: 'POST',
@@ -53,7 +53,8 @@ function AdminContent() {
     }
   };
 
-  const handleUpdatePart = async (partData: Part) => {
+  const handleUpdatePart = async (partData: Part | Omit<Part, 'id' | 'created_at' | 'updated_at'>) => {
+    if (!('id' in partData)) return;
     try {
       const response = await fetch(`/api/calculator/parts/${partData.id}`, {
         method: 'PUT',
