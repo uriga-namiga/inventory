@@ -149,6 +149,9 @@ function AdminContent() {
           <p className="text-gray-600 dark:text-gray-300">
             볼꾸 파츠를 등록하고 관리하세요
           </p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            v{process.env.NEXT_PUBLIC_BUILD_DATE}
+          </p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

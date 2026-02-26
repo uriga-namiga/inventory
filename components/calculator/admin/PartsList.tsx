@@ -60,7 +60,7 @@ function SortableRow({ part, onEdit, onDelete }: SortableRowProps) {
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 touch-none select-none"
+          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 touch-none select-none p-3 -m-1"
           title="드래그하여 순서 변경"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
