@@ -60,7 +60,7 @@ function SortableRow({ part, onEdit, onDelete }: SortableRowProps) {
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 touch-none select-none"
           title="드래그하여 순서 변경"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -120,7 +120,7 @@ export default function PartsList({ parts, onEdit, onDelete, onReorder }: PartsL
       activationConstraint: { distance: 8 },
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 200, tolerance: 5 },
+      activationConstraint: { delay: 120, tolerance: 5 },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
