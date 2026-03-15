@@ -1,21 +1,24 @@
 import { NextResponse } from 'next/server';
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
-async function getDbClient() {
-  const client = new Client({
-    connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-  });
-  await client.connect();
-  return client;
+let pool: Pool | null = null;
+
+function getPool() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 1,
+    });
+  }
+  return pool;
 }
 
 // GET - 전체 제품 목록 조회
 export async function GET() {
-  let client;
   try {
-    client = await getDbClient();
-    const result = await client.query(
+    const pool = getPool();
+    const result = await pool.query(
       `SELECT 
         id, name, image_url, purchase_price, sale_price, margin_rate, 
         quantity, link, supplier, 
@@ -32,14 +35,11 @@ export async function GET() {
       { error: '제품 목록을 불러오는데 실패했습니다.' },
       { status: 500 }
     );
-  } finally {
-    if (client) await client.end();
   }
 }
 
 // POST - 새 제품 생성
 export async function POST(request: Request) {
-  let client;
   try {
     const body = await request.json();
     const { name, image_url, purchase_price, sale_price, margin_rate, quantity, link, supplier, purchase_date } = body;
@@ -51,19 +51,18 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
-    client = await getDbClient();
+    
+    const pool = getPool();
     
     // 구매처가 입력되었으면 suppliers 테이블에 저장
     if (supplier && supplier.trim()) {
-      await client.query(
-        `INSERT INTO suppliers (name) VALUES ($1) 
-         ON CONFLICT (name) DO NOTHING`,
+      await pool.query(
+        'INSERT INTO suppliers (name) VALUES ($1) ON CONFLICT (name) DO NOTHING',
         [supplier.trim()]
       );
     }
     
-    const result = await client.query(
+    const result = await pool.query(
       `INSERT INTO products (name, image_url, purchase_price, sale_price, margin_rate, quantity, link, supplier, purchase_date)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
@@ -77,7 +76,5 @@ export async function POST(request: Request) {
       { error: '제품 등록에 실패했습니다.' },
       { status: 500 }
     );
-  } finally {
-    if (client) await client.end();
   }
 }

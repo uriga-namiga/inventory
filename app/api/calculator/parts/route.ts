@@ -1,61 +1,50 @@
 import { NextResponse } from 'next/server';
-import { Client } from 'pg';
+import { Pool } from 'pg';
 import { verifyAuth } from '@/lib/calculator/auth';
 
-async function getDbClient() {
-  const client = new Client({
-    connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-  });
-  await client.connect();
-  return client;
+// Serverless 환경에서 Pool 재사용을 위한 글로벌 변수
+let pool: Pool | null = null;
+
+function getPool() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 1, // Serverless에서는 연결 수 최소화
+    });
+  }
+  return pool;
 }
 
 // GET - 파츠 목록 조회 (공개)
+// 클라이언트에서 필터링하므로 전체 목록만 반환
 export async function GET(request: Request) {
-  let client;
+  const startTime = Date.now();
+  
   try {
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get('search') || '';
-    const category = searchParams.get('category') || '';
-
-    client = await getDbClient();
+    const queryStart = Date.now();
+    const pool = getPool();
+    const result = await pool.query('SELECT * FROM parts ORDER BY created_at DESC');
+    const queryTime = Date.now() - queryStart;
+    const totalTime = Date.now() - startTime;
     
-    let query = 'SELECT * FROM parts WHERE 1=1';
-    const params: any[] = [];
-    let paramIndex = 1;
-
-    if (search) {
-      query += ` AND name ILIKE $${paramIndex}`;
-      params.push(`%${search}%`);
-      paramIndex++;
-    }
-
-    if (category && category !== '전체') {
-      query += ` AND category = $${paramIndex}`;
-      params.push(category);
-      paramIndex++;
-    }
-
-    query += ' ORDER BY created_at DESC';
-
-    const result = await client.query(query, params);
+    console.log(`[PERF] Parts API - Query: ${queryTime}ms, Total: ${totalTime}ms`);
     
-    return NextResponse.json({ parts: result.rows });
+    return NextResponse.json({ 
+      parts: result.rows,
+      _perf: process.env.NODE_ENV === 'development' ? { queryTime, totalTime } : undefined
+    });
   } catch (error) {
     console.error('파츠 조회 에러:', error);
     return NextResponse.json(
       { error: '파츠 목록을 불러오는데 실패했습니다.' },
       { status: 500 }
     );
-  } finally {
-    if (client) await client.end();
   }
 }
 
 // POST - 파츠 생성 (인증 필요)
 export async function POST(request: Request) {
-  let client;
   try {
     // 인증 확인
     const isAuthenticated = await verifyAuth();
@@ -76,13 +65,10 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
-    client = await getDbClient();
     
-    const result = await client.query(
-      `INSERT INTO parts (name, category, price, image_url)
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
+    const pool = getPool();
+    const result = await pool.query(
+      'INSERT INTO parts (name, category, price, image_url) VALUES ($1, $2, $3, $4) RETURNING *',
       [name, category, price, image_url || null]
     );
 
@@ -93,7 +79,5 @@ export async function POST(request: Request) {
       { error: '파츠 등록에 실패했습니다.' },
       { status: 500 }
     );
-  } finally {
-    if (client) await client.end();
   }
 }

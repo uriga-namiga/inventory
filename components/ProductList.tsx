@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
+import Hangul from 'hangul-js';
 import type { Product } from '@/types/product';
 
 interface ProductListProps {
@@ -15,6 +16,19 @@ interface ProductListProps {
 
 type SortField = 'name' | 'quantity' | 'purchase_price' | 'sale_price' | 'margin_rate';
 type SortDirection = 'asc' | 'desc';
+
+// 한글 초성 검색 헬퍼 함수
+function matchesKoreanSearch(text: string, query: string): boolean {
+  if (!query) return true;
+  
+  // 일반 검색 (대소문자 무시)
+  const normalMatch = text.toLowerCase().includes(query.toLowerCase());
+  if (normalMatch) return true;
+  
+  // 초성 검색
+  const searcher = new Hangul.Searcher(query);
+  return searcher.search(text) >= 0;
+}
 
 export default function ProductList({ 
   products, 
@@ -49,21 +63,17 @@ export default function ProductList({
     return Array.from(uniqueSuppliers).sort();
   }, [products]);
 
-  // Filter suppliers based on search query
+  // Filter suppliers based on search query (초성 검색 지원)
   const filteredSuppliers = useMemo(() => {
     if (!supplierSearchQuery) return suppliers;
-    return suppliers.filter(s => 
-      s.toLowerCase().includes(supplierSearchQuery.toLowerCase())
-    );
+    return suppliers.filter(s => matchesKoreanSearch(s, supplierSearchQuery));
   }, [suppliers, supplierSearchQuery]);
 
-  // Filter products based on search queries
+  // Filter products based on search queries (초성 검색 지원)
   const getFilteredProducts = useMemo(() => {
     return products.filter(product => {
-      // Product name search
-      const matchesSearch = product.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      // Product name search (초성 검색 지원)
+      const matchesSearch = matchesKoreanSearch(product.name, searchQuery);
       
       // Supplier filter
       const matchesSupplier = !selectedSupplier || 
