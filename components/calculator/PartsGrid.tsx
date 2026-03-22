@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import useSWR from 'swr';
 import Hangul from 'hangul-js';
 import type { Part, ImageSize } from '@/types/calculator';
 import PartCard from './PartCard';
 import SearchBar from './SearchBar';
 import { useCart } from '@/lib/calculator/CartContext';
+
+const DEFAULT_FILTER = '전체';
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name' | 'category';
 
@@ -32,9 +34,30 @@ function matchesKoreanSearch(text: string, query: string): boolean {
 
 export default function PartsGrid({ imageSize, sortBy }: PartsGridProps) {
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState<string>('전체');
+  const [category, setCategory] = useState<string>(DEFAULT_FILTER);
+  const [allCategories, setAllCategories] = useState<string[]>([DEFAULT_FILTER]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { addToCart } = useCart();
+
+  // DB에서 카테고리 목록 로드
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/calculator/categories');
+      if (res.ok) {
+        const data = await res.json();
+        const names = (data.categories || []).map((c: { name: string }) => c.name);
+        setAllCategories([DEFAULT_FILTER, ...names]);
+      }
+    } catch (error) {
+      console.error('카테고리 로드 실패:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+    window.addEventListener('categoryUpdated', fetchCategories);
+    return () => window.removeEventListener('categoryUpdated', fetchCategories);
+  }, []);
 
   // SWR로 전체 파츠 1회 로드 + 자동 캐싱
   const { data, error, isLoading, mutate } = useSWR(
@@ -159,38 +182,55 @@ export default function PartsGrid({ imageSize, sortBy }: PartsGridProps) {
             </span>
           )}
         </div>
-        
-        {/* 새로고침 버튼 */}
-        <button
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 
-                     disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg 
-                     transition-colors text-sm font-semibold"
-          title="서버에서 최신 데이터 가져오기"
-        >
-          <svg 
-            className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
+
+        <div className="flex items-center gap-2">
+          {/* 카테고리 필터 버튼 */}
+          <div className="flex flex-wrap gap-1">
+            {allCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
+                  ${category === cat
+                    ? 'bg-green-500 text-white shadow-sm'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* 새로고침 버튼 */}
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600
+                       disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg
+                       transition-colors text-sm font-semibold flex-shrink-0"
+            title="서버에서 최신 데이터 가져오기"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
-            />
-          </svg>
-          <span className="hidden sm:inline">새로고침</span>
-        </button>
+            <svg
+              className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            <span className="hidden sm:inline">새로고침</span>
+          </button>
+        </div>
       </div>
 
       <SearchBar
         search={search}
-        category={category}
         onSearchChange={setSearch}
-        onCategoryChange={setCategory}
       />
 
       {sortedParts.length === 0 ? (

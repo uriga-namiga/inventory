@@ -8,26 +8,37 @@ interface CategoryInputProps {
   required?: boolean;
 }
 
-const DEFAULT_CATEGORIES = ['펜', '구슬', '캐릭터', '프리미엄'];
-const STORAGE_KEY = 'calculator_category_history';
+interface Category {
+  id: number;
+  name: string;
+  is_default: boolean;
+}
 
 export default function CategoryInput({ value, onChange, required = true }: CategoryInputProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // LocalStorage에서 사용자 정의 카테고리 로드
+  // DB에서 카테고리 로드
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
+    const fetchCategories = async () => {
       try {
-        const parsed = JSON.parse(stored);
-        setCustomCategories(parsed);
+        const res = await fetch('/api/calculator/categories');
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data.categories || []);
+        }
       } catch (error) {
-        console.error('카테고리 히스토리 로드 실패:', error);
+        console.error('카테고리 로드 실패:', error);
       }
-    }
+    };
+
+    fetchCategories();
+
+    const handleUpdate = () => { fetchCategories(); };
+    window.addEventListener('categoryUpdated', handleUpdate);
+    return () => window.removeEventListener('categoryUpdated', handleUpdate);
   }, []);
 
   // 외부 클릭 감지
@@ -47,54 +58,23 @@ export default function CategoryInput({ value, onChange, required = true }: Cate
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 모든 카테고리 (기본 + 커스텀, 중복 제거)
-  const allCategories = Array.from(
-    new Set([...DEFAULT_CATEGORIES, ...customCategories])
-  ).sort();
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    onChange(newValue);
+    onChange(e.target.value);
     setIsOpen(true);
   };
 
   const handleSelectCategory = (category: string) => {
     onChange(category);
     setIsOpen(false);
-
-    // 새로운 카테고리면 히스토리에 추가
-    if (!DEFAULT_CATEGORIES.includes(category) && !customCategories.includes(category)) {
-      const updated = [category, ...customCategories].slice(0, 20); // 최대 20개
-      setCustomCategories(updated);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      
-      // 다른 컴포넌트에 업데이트 알림
-      window.dispatchEvent(new Event('categoryUpdated'));
-    }
   };
 
   const handleInputFocus = () => {
     setIsOpen(true);
   };
 
-  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const newValue = e.target.value.trim();
-    if (newValue) {
-      // 새로운 카테고리면 히스토리에 추가
-      if (!DEFAULT_CATEGORIES.includes(newValue) && !customCategories.includes(newValue)) {
-        const updated = [newValue, ...customCategories].slice(0, 20);
-        setCustomCategories(updated);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        
-        // 다른 컴포넌트에 업데이트 알림
-        window.dispatchEvent(new Event('categoryUpdated'));
-      }
-    }
-  };
-
   // 필터링된 카테고리 목록
-  const filteredCategories = allCategories.filter((cat) =>
-    cat.toLowerCase().includes(value.toLowerCase())
+  const filteredCategories = categories.filter((cat) =>
+    cat.name.toLowerCase().includes(value.toLowerCase())
   );
 
   return (
@@ -105,9 +85,8 @@ export default function CategoryInput({ value, onChange, required = true }: Cate
         value={value}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
-        onBlur={handleInputBlur}
         placeholder="카테고리 입력 또는 선택"
-        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 
+        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600
                  bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                  focus:outline-none focus:ring-2 focus:ring-green-500"
         required={required}
@@ -116,26 +95,23 @@ export default function CategoryInput({ value, onChange, required = true }: Cate
       {isOpen && filteredCategories.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 
+          className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
                    rounded-lg shadow-lg max-h-60 overflow-y-auto"
         >
-          {filteredCategories.map((category, index) => {
-            const isDefault = DEFAULT_CATEGORIES.includes(category);
-            return (
-              <button
-                key={index}
-                type="button"
-                onClick={() => handleSelectCategory(category)}
-                className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 
-                         text-gray-900 dark:text-white flex items-center justify-between"
-              >
-                <span>{category}</span>
-                {!isDefault && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400">사용자 정의</span>
-                )}
-              </button>
-            );
-          })}
+          {filteredCategories.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              onClick={() => handleSelectCategory(category.name)}
+              className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700
+                       text-gray-900 dark:text-white flex items-center justify-between"
+            >
+              <span>{category.name}</span>
+              {!category.is_default && (
+                <span className="text-xs text-gray-500 dark:text-gray-400">사용자 정의</span>
+              )}
+            </button>
+          ))}
         </div>
       )}
     </div>

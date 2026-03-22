@@ -6,6 +6,7 @@ import Link from 'next/link';
 import AuthGuard from '@/components/calculator/admin/AuthGuard';
 import PartForm from '@/components/calculator/admin/PartForm';
 import PartsList from '@/components/calculator/admin/PartsList';
+import CategoryManager from '@/components/calculator/admin/CategoryManager';
 import type { Part } from '@/types/calculator';
 
 function AdminContent() {
@@ -155,12 +156,13 @@ function AdminContent() {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-4 space-y-6">
             <PartForm
               editingPart={editingPart}
               onSubmit={editingPart ? handleUpdatePart : handleAddPart}
               onCancel={() => setEditingPart(null)}
             />
+            <CategoryManager />
           </div>
           <div className="lg:col-span-8">
             <PartsList
