@@ -30,11 +30,12 @@ interface PartsListProps {
 
 interface SortableRowProps {
   part: Part;
+  index: number;
   onEdit: (part: Part) => void;
   onDelete: (part: Part) => void;
 }
 
-function SortableRow({ part, onEdit, onDelete }: SortableRowProps) {
+function SortableRow({ part, index, onEdit, onDelete }: SortableRowProps) {
   const {
     attributes,
     listeners,
@@ -56,6 +57,9 @@ function SortableRow({ part, onEdit, onDelete }: SortableRowProps) {
       style={style}
       className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
     >
+      <td className="py-3 px-2 text-center text-sm text-gray-500 dark:text-gray-400 font-medium">
+        {index}
+      </td>
       <td className="py-3 px-2">
         <button
           {...attributes}
@@ -178,8 +182,11 @@ export default function PartsList({ parts, onEdit, onDelete, onReorder }: PartsL
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="text-center py-3 px-2 text-sm font-semibold text-gray-700 dark:text-gray-300 w-10">
+                  No.
+                </th>
                 <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700 dark:text-gray-300 w-12">
-                  
+
                 </th>
                 <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                   이미지
@@ -203,10 +210,11 @@ export default function PartsList({ parts, onEdit, onDelete, onReorder }: PartsL
                 items={parts.map((p) => p.id)}
                 strategy={verticalListSortingStrategy}
               >
-                {parts.map((part) => (
+                {parts.map((part, idx) => (
                   <SortableRow
                     key={part.id}
                     part={part}
+                    index={idx + 1}
                     onEdit={onEdit}
                     onDelete={handleDelete}
                   />

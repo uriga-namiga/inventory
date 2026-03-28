@@ -1,23 +1,24 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// 인증 없이 접근 가능한 경로
-const PUBLIC_PATHS = [
-  '/calculator/admin/login',
-  '/calculator',
-  '/api/calculator/auth/login',
-  '/api/calculator/auth/logout',
-  '/api/calculator/auth/verify',
-  '/api/calculator/parts',
-  '/api/calculator/categories',
-];
-
 function isPublicPath(pathname: string): boolean {
-  // 정확히 일치하는 공개 경로
-  if (PUBLIC_PATHS.includes(pathname)) return true;
-  // 정적 파일, 이미지 등
+  // 로그인 페이지
+  if (pathname.startsWith('/calculator/admin/login')) return true;
+
+  // 계산기 공개 페이지 (관리자 제외)
+  if (pathname === '/calculator') return true;
+
+  // 인증 관련 API
+  if (pathname.startsWith('/api/calculator/auth/')) return true;
+
+  // 공개 읽기 API (GET만 허용하려면 route handler에서 처리)
+  if (pathname === '/api/calculator/parts') return true;
+  if (pathname === '/api/calculator/categories') return true;
+
+  // 정적 파일
   if (pathname.startsWith('/_next/')) return true;
   if (pathname === '/favicon.ico') return true;
+
   return false;
 }
 
@@ -31,7 +32,7 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // 그 외 모든 경로 (메인 페이지, 관리자 페이지, API 등)는 인증 필요
+  // 그 외 모든 경로는 인증 필요
   const session = request.cookies.get('calculator_admin_session');
   if (!session?.value) {
     // API 요청이면 401 반환
