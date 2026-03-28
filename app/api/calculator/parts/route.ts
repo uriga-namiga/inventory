@@ -9,7 +9,9 @@ function getPool() {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
+      ssl: process.env.NODE_ENV === 'production'
+        ? { rejectUnauthorized: true }
+        : { rejectUnauthorized: false },
       max: 1, // Serverless에서는 연결 수 최소화
     });
   }
@@ -30,9 +32,13 @@ export async function GET(request: Request) {
     
     console.log(`[PERF] Parts API - Query: ${queryTime}ms, Total: ${totalTime}ms`);
     
-    return NextResponse.json({ 
+    return NextResponse.json({
       parts: result.rows,
       _perf: process.env.NODE_ENV === 'development' ? { queryTime, totalTime } : undefined
+    }, {
+      headers: {
+        'Cache-Control': 'public, max-age=30, stale-while-revalidate=60',
+      },
     });
   } catch (error) {
     console.error('파츠 조회 에러:', error);

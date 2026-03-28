@@ -8,7 +8,9 @@ function getPool() {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
+      ssl: process.env.NODE_ENV === 'production'
+        ? { rejectUnauthorized: true }
+        : { rejectUnauthorized: false },
       max: 1,
     });
   }
@@ -22,7 +24,11 @@ export async function GET() {
     const result = await pool.query(
       'SELECT * FROM categories ORDER BY is_default DESC, created_at ASC'
     );
-    return NextResponse.json({ categories: result.rows });
+    return NextResponse.json({ categories: result.rows }, {
+      headers: {
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     console.error('카테고리 조회 에러:', error);
     return NextResponse.json(

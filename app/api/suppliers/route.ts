@@ -7,7 +7,9 @@ function getPool() {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
+      ssl: process.env.NODE_ENV === 'production'
+        ? { rejectUnauthorized: true }
+        : { rejectUnauthorized: false },
       max: 1,
     });
   }
@@ -20,7 +22,11 @@ export async function GET() {
     const pool = getPool();
     const result = await pool.query('SELECT name FROM suppliers ORDER BY name ASC');
     
-    return NextResponse.json(result.rows);
+    return NextResponse.json(result.rows, {
+      headers: {
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     console.error('구매처 조회 에러:', error);
     return NextResponse.json(

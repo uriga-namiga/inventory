@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import ProductForm from '@/components/ProductForm';
 import ProductList from '@/components/ProductList';
+import AuthGuard from '@/components/calculator/admin/AuthGuard';
 import type { Product } from '@/types/product';
 
-export default function Home() {
+function HomeContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -126,7 +127,16 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <header className="text-center mb-8">
-          <div className="flex justify-end mb-2">
+          <div className="flex justify-between mb-2">
+            <button
+              onClick={async () => {
+                await fetch('/api/calculator/auth/logout', { method: 'POST' });
+                window.location.href = '/calculator/admin/login';
+              }}
+              className="text-sm text-red-600 dark:text-red-400 hover:underline"
+            >
+              로그아웃
+            </button>
             <a
               href="/calculator"
               className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
@@ -169,5 +179,13 @@ export default function Home() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <AuthGuard>
+      <HomeContent />
+    </AuthGuard>
   );
 }

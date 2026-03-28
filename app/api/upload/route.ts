@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
+import { verifyAuth } from '@/lib/calculator/auth';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 export async function POST(request: NextRequest) {
   try {
+    // 인증 체크
+    const isAuthenticated = await verifyAuth();
+    if (!isAuthenticated) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
@@ -12,11 +23,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 파일 크기 제한
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: '파일 크기는 5MB 이하만 가능합니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 이미지 타입만 허용
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: '이미지 파일만 업로드 가능합니다. (jpg, png, webp, gif)' },
+        { status: 400 }
+      );
+    }
+
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     const apiKey = process.env.CLOUDINARY_API_KEY;
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
-    
+
     if (!cloudName || !apiKey || !apiSecret) {
+      console.error('Cloudinary 환경변수 누락:', {
+        cloudName: !!cloudName,
+        apiKey: !!apiKey,
+        apiSecret: !!apiSecret
+      });
       return NextResponse.json(
         { error: 'Cloudinary 설정이 없습니다.' },
         { status: 500 }
@@ -30,10 +62,8 @@ export async function POST(request: NextRequest) {
 
     // Cloudinary 업로드 (Signed upload)
     const timestamp = Math.round(new Date().getTime() / 1000);
-    const crypto = require('crypto');
-    
-    const signature = crypto
-      .createHash('sha256')
+
+    const signature = createHash('sha256')
       .update(`timestamp=${timestamp}${apiSecret}`)
       .digest('hex');
 
@@ -52,9 +82,9 @@ export async function POST(request: NextRequest) {
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Cloudinary 에러:', errorData);
-      throw new Error('Cloudinary 업로드 실패');
+      const errorText = await response.text();
+      console.error('Cloudinary 에러:', response.status, errorText);
+      throw new Error(`Cloudinary 업로드 실패: ${response.status}`);
     }
 
     const data = await response.json();
