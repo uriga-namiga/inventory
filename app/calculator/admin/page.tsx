@@ -138,11 +138,6 @@ function AdminContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleReorder = (reorderedParts: Part[]) => {
-    setParts(reorderedParts);
-    // 선택사항: 서버에 순서 저장 (향후 구현)
-  };
-
   const handleLogout = async () => {
     try {
       await fetch('/api/calculator/auth/logout', { method: 'POST' });
@@ -223,7 +218,6 @@ function AdminContent() {
               parts={filteredParts}
               onEdit={handleEdit}
               onDelete={handleDeletePart}
-              onReorder={handleReorder}
             />
           </div>
         </div>
