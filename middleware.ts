@@ -7,6 +7,7 @@ function isPublicPath(pathname: string): boolean {
 
   // 계산기 공개 페이지 (관리자 제외)
   if (pathname === '/calculator') return true;
+  if (pathname === '/calculator/practice') return true;
 
   // 인증 관련 API
   if (pathname.startsWith('/api/calculator/auth/')) return true;

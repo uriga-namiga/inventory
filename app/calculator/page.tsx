@@ -35,9 +35,17 @@ export default function CalculatorPage() {
                   관리자 →
                 </Link>
               </div>
-              <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
-                볼꾸 파츠 계산기
-              </h1>
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
+                  볼꾸 파츠 계산기
+                </h1>
+                <Link
+                  href="/calculator/practice"
+                  className="text-sm px-3 py-1 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors"
+                >
+                  게임 연습
+                </Link>
+              </div>
               <p className="text-gray-600 dark:text-gray-300">
                 원하는 파츠를 클릭하여 장바구니에 담아보세요
               </p>
